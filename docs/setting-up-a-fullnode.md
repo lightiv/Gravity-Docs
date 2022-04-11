@@ -43,7 +43,7 @@ seeds = "2b089bfb4c7366efb402b48376a7209632380c9c@65.19.136.133:26656,63e662f5e0
 
 ### Return To The Gravity Toolbox
 
-[Gravity Toolbox](https://gravity-snapshot01.skynetvalidators.com)
+[SkyNet | Validators Gravity Bridge Toolbox](https://gravity-snapshot01.skynetvalidators.com/index.nginx-debian.html)
 
 
 ### Configure your node for state sync
