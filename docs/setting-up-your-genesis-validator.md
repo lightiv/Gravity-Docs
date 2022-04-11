@@ -17,18 +17,19 @@ cd gravity-bin
 
 # the gravity chain binary itself
 
-wget https://github.com/Gravity-Bridge/Gravity-Bridge/releases/download/v1.0.7/gravity-linux-amd64
+wget https://github.com/Gravity-Bridge/Gravity-Bridge/releases/download/v1.0.8/gravity-linux-amd64
 mv gravity-linux-amd64 gravity
 
 # Tools for the gravity bridge from the gravity repo
 
-wget https://github.com/Gravity-Bridge/Gravity-Bridge/releases/download/v1.0.7/gbt
+wget https://github.com/Gravity-Bridge/Gravity-Bridge/releases/download/v1.0.8/gbt
 chmod +x *
 sudo mv * /usr/bin/
+```
 
-At specific points during the testnet you may be told to 'update your orchestrator' or 'update your gravity binary'. In order to do that you can simply repeat the above instructions and then restart the affected software.
+At specific points you may be told to 'update your orchestrator' or 'update your gravity binary'. In order to do that you can simply repeat the above instructions and then restart the affected software.
 
-to check what version of the tools you have run `gbt --version` the current latest version is `gbt 1.0.7`
+to check what version of the tools you have run `gbt --version` the current latest version is `gbt 1.0.8`
 
 ## Download updated Genesis.json
 
@@ -179,7 +180,7 @@ Once the chains starts your Orchestrator delegate key will need some `ugraviton`
 
 ```bash
 
-gravity tx distribution withdraw-all-rewards --from <validator-key-name> --chain-id gravity-bridge-1
-gravity tx bank send <validator-key-name> <orchestrator address> 1ugraviton --chain-id gravity-bridge-1
+gravity tx distribution withdraw-all-rewards --from <validator-key-name> --chain-id gravity-bridge-3
+gravity tx bank send <validator-key-name> <orchestrator address> 1ugraviton --chain-id gravity-bridge-3
 
 ```

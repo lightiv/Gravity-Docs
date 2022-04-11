@@ -8,6 +8,8 @@ This document is *not* for genesis validators. They should use [settings up your
 
 You will need a key containing some Graviton token. If you wish to participate in the network but not stake Graviton see the guide for [setting up a Gravity Bridge Chain full node](setting-up-a-fullnode.md)
 
+Once your validator is setup consider [setting up a sentry node](basic-sentry-setup.md)
+
 ## Download Gravity chain and the Gravity tools
 
 ```bash
@@ -17,20 +19,33 @@ cd gravity-bin
 
 # the gravity chain binary itself
 
-wget https://github.com/Gravity-Bridge/Gravity-Bridge/releases/download/v1.0.7/gravity-linux-amd64
+wget https://github.com/Gravity-Bridge/Gravity-Bridge/releases/download/v1.5.0/gravity-linux-amd64
 mv gravity-linux-amd64 gravity
 
 # Tools for the gravity bridge from the gravity repo
 
-wget https://github.com/Gravity-Bridge/Gravity-Bridge/releases/download/v1.0.7/gbt
+wget https://github.com/Gravity-Bridge/Gravity-Bridge/releases/download/v1.5.0/gbt
 chmod +x *
 sudo mv * /usr/bin/
 
 ```
 
-At specific points during the testnet you may be told to 'update your orchestrator' or 'update your gravity binary'. In order to do that you can simply repeat the above instructions and then restart the affected software.
+At specific points you may be told to 'update your orchestrator' or 'update your gravity binary'. In order to do that you can simply repeat the above instructions and then restart the affected software.
 
-to check what version of the tools you have run `gbt --version` the current latest version is `gbt 1.0.7`
+to check what version of the tools you have run `gbt --version` the current latest version is `gbt 1.5.0`
+
+## Download and install geth
+
+You only need to do this if you are running Geth locally
+
+```bash
+wget https://gethstore.blob.core.windows.net/builds/geth-linux-amd64-1.10.15-8be800ff.tar.gz
+wget https://raw.githubusercontent.com/Gravity-Bridge/Gravity-Docs/main/configs/geth-light-config.toml -O /etc/geth-light-config.toml
+wget https://raw.githubusercontent.com/Gravity-Bridge/Gravity-Docs/main/configs/geth-full-config.toml -O /etc/geth-full-config.toml
+tar -xvf geth-linux-amd64-1.10.15-8be800ff.tar.gz
+cd geth-linux-amd64-1.10.15-8be800ff.tar.gz
+mv geth /usr/sbin/
+```
 
 ## Download the genesis file
 
@@ -38,7 +53,7 @@ The genesis file represents the current state of the blockchain and allows your 
 with the rest.
 
 ```bash
-gravity init mymoniker --chain-id gravity-bridge-1
+gravity init mymoniker --chain-id gravity-bridge-3
 wget https://raw.githubusercontent.com/Gravity-Bridge/gravity-docs/main/genesis.json
 cp genesis.json $HOME/.gravity/config/genesis.json
 
@@ -50,8 +65,33 @@ Change the seed field in ~/.gravity/config/config.toml to contain the following:
 
 ```text
 
-seeds = "2b089bfb4c7366efb402b48376a7209632380c9c@65.19.136.133:26656"
+seeds = "2b089bfb4c7366efb402b48376a7209632380c9c@65.19.136.133:26656,63e662f5e048d4902c7c7126291cf1fc17687e3c@95.211.103.175:26656"
 
+```
+
+### Configure your node for state sync OR Download a snapshot
+
+Note that the most secure way to sync the chain is to sync the data yourself instead of using a snapshot or statesync. But it takes a long time and several software version upgrades.
+
+If you are syncing from scratch you will need to start with Gravity Bridge version v1.0.0 and upgrade when prompted.
+
+Follow [this guide](https://ping.pub/gravity-bridge/statesync) to configure your node for state sync. Or follow the steps below to download a snapshot.
+
+```text
+https://cosmos-snapshots.s3.filebase.com/gravitybridge/snapshot.json
+```
+
+(This is from the project <https://github.com/ovrclk/cosmos-omnibus/tree/master/gravitybridge> ) </br>
+In the snapshot.json look at the line 'latest', it should look something like:
+
+```text
+"latest": "https://cosmos-snapshots.s3.filebase.com/gravitybridge/gravity-bridge-<date>-<time>.tar.gz"
+```
+
+Download and unzip that that file, use the contents to replace your gravity data folder which should be located at:
+
+```bash
+.gravity/data/
 ```
 
 ### Add your validator key
@@ -59,7 +99,8 @@ seeds = "2b089bfb4c7366efb402b48376a7209632380c9c@65.19.136.133:26656"
 We need to import the validator key. This is the key containing Graviton tokens
 
 ```bash
-gravity keys add <my validator key name> --recover <your seed phrase>
+# you will be prompted for your key phrase
+gravity keys add <my validator key name> --recover
 ```
 
 Or if your key is stored in a ledger device.
@@ -68,9 +109,26 @@ Or if your key is stored in a ledger device.
 gravity keys add <my validator key name> --ledger
 ```
 
+#### View your key (optional)
+
+If you need to view the address of your validator operator key, you can do so with the following command: </br>
+
+```bash
+gravity keys show <validator key name> --bech val
+```
+
+You should see an output like so:
+
+```text
+- name: <validator key name>
+  ...
+  address: gravityvaloper<keystring>
+  ...
+```
+
 ### Generate your Delegate keys
 
-There are three keys involved in this process.
+There are four keys involved in this process.
 
 ```text
 Validator Funds key: This is the key you submitted for genesis it starts with `gravity1` and contains your funds
@@ -93,9 +151,6 @@ gravity keys add <Your Gravity Orchestrator Cosmos Key Name>
 ```
 
 Once we have registered our keys we will also set them in our Orchestrator right away, this reduces the risk of confusion as the chain starts and you need these keys to submit Gravity bridge signatures via your orchestrator.
-
-You can stop your testnet node at this point. If you wish to keep the testnet running you should save this step until
-mainnet start as it will cause your orchestrator to act strangely if you're using the same machine.
 
 ```bash
 gbt init
@@ -137,6 +192,8 @@ ExecStart=/usr/bin/gbt orchestrator \
 
 For the Geth node, if you are going to run a geth full node delete lines 11-15 and uncomment lines 17-21
 
+## Run Validator Services
+
 Now that we have modified these services it's time to set them to run on startup
 
 ```bash
@@ -151,63 +208,75 @@ sudo service geth start
 
 Once you have completed this setup your node will be started and waiting for the chain to move in the background.
 
+## Troubleshooting SELinux
+
+If your services are not starting, you may want to try disabling it to see if it resolves the issue </br>
+
+```bash
+sed -i""  -e "s/SELINUX=enforcing/SELINUX=disabled/" /etc/selinux/config
+```
+
+```bash
+setenforce 0
+```
+
 ## Monitoring your logs
 
 These lines will allow you to watch the logs coming out of your Gravity full node and Orchestrator as if you where directly attached to the process rather than using systemd. Run each in a separate terminal
 
+Expect to see errors in your Orchestrator service, this will persist until we finish setting up the Orchestrator in the next few steps. Since finishing Orchestrator setup requires a synced Gravity and Ethereum node there's nothing to do about it now.
+
 ```bash
-journalctl -u gravity-chain.service -f --output cat
+journalctl -u gravity-node.service -f --output cat
 journalctl -u orchestrator.service -f --output cat
+journalctl -u geth.service -f --output cat
 ```
 
-## Setting up an Ethereum node
+## Observe Sync Status and Time Remaining
 
-You probably noticed that your orchestrator is currently very unhappy. In this step we will setup an Ethereum light client
+You will need to wait for your Gravity Bridge node and Ethereum Node to fully sync before progressing in the instructions </br>
 
-We will be using Geth Ethereum light clients for this task. For production Gravity we suggest that you point your Orchestrator at a Geth light client and then configure your light client to peer with full nodes that you control. This provides higher reliability as light clients are very quick to start/stop and resync. Allowing you to for example rebuild an Ethereum full node without having days of Orchestrator downtime.
+### Ethereum
 
-Geth full nodes do not serve light clients by default, light clients do not trust full nodes, but if there are no full nodes to request proofs from they can not operate. Therefore we are collecting the largest possible
-list of Geth full nodes from our community that will serve light clients.
-
-If you have more than 40gb of free storage, an SSD and extra memory/CPU power, please run a full node and share the node url. If you do not, please use the light client instructions
-
-### Please only run one or the other of the below instructions, both will not work
-
-### Light client instructions
+You can view the status of your Ethereum node by issuing the following command: </br>
 
 ```bash
-
-wget https://gethstore.blob.core.windows.net/builds/geth-linux-amd64-1.10.13-7a0c19f8.tar.gz
-tar -xvf geth-linux-amd64-1.10.13-7a0c19f8.tar.gz
-cd geth-linux-amd64-1.10.13-7a0c19f8
-wget https://raw.githubusercontent.com/Gravity-Bridge/Gravity-Docs/main/configs/geth-light-config.toml
-./geth --syncmode "light" --http --config geth-light-config.toml
-
+curl -H "Content-Type:application/json" -X POST -d '{"jsonrpc":"2.0","method":"eth_syncing","params":[],"id":1}' http://127.0.0.1:8545
 ```
 
-### Fullnode instructions
+When result is 'false' that means it is now synced ('true' is not synced).
+
+### Gravity Node
+
+You can issue the following command to check the sync status of the Gravity Node </br>
 
 ```bash
-
-wget https://gethstore.blob.core.windows.net/builds/geth-linux-amd64-1.10.13-7a0c19f8.tar.gz
-tar -xvf geth-linux-amd64-1.10.13-7a0c19f8.tar.gz
-cd geth-linux-amd64-1.10.13-7a0c19f8
-wget https://raw.githubusercontent.com/Gravity-Bridge/Gravity-Docs/main/configs/geth-full-config.toml
-./geth --http --config geth-full-config.toml
-
+gravity status 2>&1| jq .SyncInfo.catching_up
 ```
 
-You'll see a url in this format, please note your ip and share both this node url and your ip in chat to add to the light client nodes list
+Value of 'false' means that it is now synced, 'true' means that sync is still in process.
+
+### Look at Time Remaining for Gravity Sync
+
+If you look at your journal logs for gravity-node like so:
 
 ```bash
-INFO [06-10|14:11:03.104] Started P2P networking self=enode://71b8bb569dad23b16822a249582501aef5ed51adf384f424a060aec4151b7b5c4d8a1503c7f3113ef69e24e1944640fc2b422764cf25dbf9db91f34e94bf4571@127.0.0.1:30303
+journalctl -u gravity-node.service -f --output cat
 ```
 
-Finally you'll need to wait for several hours until your node is synced. Do not worry your orchestrator will submit signatures to to the Gravity bridge chain during this time.
+You should see a message in the logs that looks like (search for 'fast'):
 
-## Wait for it
+```text
+9:49PM INF committed state app_hash=76B7FFFA844FA8EABA6E2C400DBE53C22A6F94A36E41922F06C0D57417E118EB height=350595 module=state num_txs=1
+9:49PM INF Fast Sync Rate blocks/s=6.0707074013746825 height=350596 max_peer_height=422352 module=blockchain
+9:49PM INF indexed block height=350595 module=txindex
+```
 
-you will need to wait for your Gravity Bridge node and Ethereum Node to fully sync before progressing in the instructions
+You can calculate remaining time in seconds with:
+
+```text
+(max_peer_height - height) / Fast Sync Rate blocks/s
+```
 
 ## Send your validator setup transaction
 
@@ -217,7 +286,7 @@ gravity tx staking create-validator \
  --amount=<the amount of graviton you wish to stake>ugraviton \
  --pubkey=$(gravity tendermint show-validator) \
  --moniker="put your validator name here" \
- --chain-id=gravity-bridge-1 \
+ --chain-id=gravity-bridge-3 \
  --from=myvalidatorkeyname \
  --commission-rate="0.10" \
  --commission-max-rate="0.20" \
@@ -271,4 +340,4 @@ gravity tx gravity set-orchestrator-address [validator-address] [orchestrator-ad
 
 ### Fund your delegate keys
 
-Your delegate Ethereum key will need some Gorli ETH, your delegate cosmos key (orchestrator key) will need some tokens as well.
+Your delegate Ethereum key will need some ETH (dust enough), your delegate cosmos key (orchestrator key) will need some tokens as well.

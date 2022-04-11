@@ -34,7 +34,8 @@ gravity init <your moniker here>
 First we need to import the validator key. This is the key for the address you submitted on the forum.
 
 ```bash
-gravity keys add <my validator key name> --recover <your seed phrase>
+# you will be prompted for your key phrase
+gravity keys add <my validator key name> --recover
 ```
 
 Or if your key is stored in a ledger device.
@@ -74,7 +75,7 @@ mainnet start as it will cause your orchestrator to act strangely if you're usin
 
 ```bash
 gbt init
-gbt keys set-ethereum-key --key Gravity Orchestrator Ethereum Key
+gbt keys set-ethereum-key --key Gravity Orchestrator Ethereum Private Key
 gbt keys set-orchestrator-key --phrase "Gravity Orchestrator Cosmos Key"
 ```
 
