@@ -5,14 +5,12 @@ Unlike the validator flow no external software is required.
 
 ## What do I need
 
-A Linux server with any modern Linux distribution, 2gb of ram and at least 20gb storage.
+A Linux server with any modern Linux distribution, 4gb of ram and at least 320gb storage.
 
 ### Download Gravity chain software
 
-Syncing starts with v1.4.0 and you should upgrade to v1.5.0 when prompted.
-
 ```bash
-wget https://github.com/Gravity-Bridge/Gravity-Bridge/releases/download/v1.4.0/gravity-linux-amd64
+wget https://github.com/Gravity-Bridge/Gravity-Bridge/releases/download/v1.5.0/gravity-linux-amd64
 mv gravity-linux-amd64 gravity
 
 chmod +x gravity
@@ -23,7 +21,7 @@ sudo mv gravity /usr/bin/
 
 ```bash
 cd $HOME
-gravity init mymoniker --chain-id gravity-bridge-3
+gravity init <MYMONIKER> --chain-id gravity-bridge-3
 ```
 
 ### Copy the genesis file
@@ -43,7 +41,11 @@ seeds = "2b089bfb4c7366efb402b48376a7209632380c9c@65.19.136.133:26656,63e662f5e0
 
 ```
 
+### Return To The Gravity Toolbox
+
 ### Configure your node for state sync
+
+[Gravity Toolbox](https://gravity-snapshot01.skynetvalidators.com)
 
 Follow [this guide](https://ping.pub/gravity-bridge/statesync) to configure your node for state sync if you do not skip this step you will have to start with Gravity v1.0 and upgrade when prompted. This will take a very long time.
 
