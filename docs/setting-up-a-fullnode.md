@@ -44,14 +44,3 @@ seeds = "2b089bfb4c7366efb402b48376a7209632380c9c@65.19.136.133:26656,63e662f5e0
 ### Return To The Gravity Toolbox
 
 [SkyNet | Validators Gravity Bridge Toolbox](https://gravity-snapshot01.skynetvalidators.com/index.nginx-debian.html)
-
-
-### Configure your node for state sync
-
-Follow [this guide](https://ping.pub/gravity-bridge/statesync) to configure your node for state sync if you do not skip this step you will have to start with Gravity v1.0 and upgrade when prompted. This will take a very long time.
-
-### Start your full node and wait for it to sync
-
-```bash
-gravity start
-```
